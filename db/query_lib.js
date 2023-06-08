@@ -30,6 +30,30 @@ viewEmployees () {
         err ? console.log(err) : console.table(results)})
 };
 
+getDepartmentId (data) {
+    const values = [data.name];
+    return this.db.promise().query(`SELECT id FROM departments WHERE department_name = ?`, values)
+}
+
+getRoleId (data) {
+    const values = [data.title];
+    return this.db.promise().query(`SELECT id FROM roles WHERE title=?`, values);
+}
+
+
+getEmployeeId (data) {
+    const values = [data.manager];
+    return this.db.promise().query(`SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) =?`, values)
+}
+
+getManagers () {
+return this.db.promise().query(`SELECT CONCAT(first_name, ' ', last_name) AS manager FROM employees WHERE manager_id IS NULL`);
+}
+
+getEmployeeFullName () {
+    return this.db.promise().query(`SELECT CONCAT(first_name, ' ', last_name) AS fullName FROM employees`);
+    }
+
 //add department
 addDepartment (data) {
     const values = [data.name];
@@ -41,17 +65,6 @@ addDepartment (data) {
         };
     })
 };
-
-getDepartments () {
-    db.promise().query(`SELECT * FROM departments`)
-    .then((results) => {
-        //console.log(results)
-        const departArr = results[0].map((obj) => obj.department_name);
-        //console.log(departArr);
-        return departArr;
-    }) 
-}
-  
 
 //add role
 addRole (data) {
