@@ -37,26 +37,19 @@ const viewEmployees = () => {
 
 
 //add department
-
 const addDepartment = () => {
     inquirer
     .prompt([{
         type: 'input',
-        name: 'department',
+        name: 'name',
         message: 'What is the name of the department?',
     }])
-    .then((answer)=>{
-        const sql =`INSERT INTO departments (department_name) VALUES (?)`
-        db.query(sql, answer.department, (err, results) => {
-        if (err) {
-            console.log(err)
-        } else {
-            //console.table(results)
-            //console.log(results);
-            viewDepartments()
-            init();
-        } 
-      })
+    .then((data)=>{
+        sql.addDepartment(data)
+        .then(() => {
+          console.log("Added Department!")
+          init();
+        });
     })
 };
 

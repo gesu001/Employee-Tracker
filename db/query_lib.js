@@ -53,13 +53,7 @@ getEmployeeFullName () {
 //add department
 addDepartment (data) {
     const values = [data.name];
-    return this.db.promise().query(`INSERT INTO department (department_name) VALUES(?)`, values, (err, results) => {
-        if (err) {
-            console.log(err)
-        } else {
-            console.log(results);
-        };
-    })
+    return this.db.promise().query(`INSERT INTO departments (department_name) VALUES(?)`, values)
 };
 
 //add role
