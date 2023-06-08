@@ -53,10 +53,15 @@ const viewRoles = () => {
 
 //View All Employees
 const viewEmployees = () => {
-    const sql =`SELECT * FROM employees`
+
+    const sql = `SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.department_name, roles.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
+    FROM employees
+    LEFT JOIN roles ON employees.role_id = roles.id
+    LEFT JOIN departments ON roles.department_id = departments.id
+    LEFT JOIN employees AS manager ON employees.manager_id = manager.id
+    ORDER By employees.id`;
     db.query(sql, (err, results) => {
-        err ? console.log(err) : console.table(results)
-        //console.log(results);
+        err ? console.error(err) : console.table(results);
         init();
     })
 };
@@ -96,8 +101,6 @@ const addRole = () => {
             //console.log(departArr);
             return departArr;
         })   
-    
-
 
     inquirer
     .prompt([
@@ -134,31 +137,84 @@ const addRole = () => {
     })
 
 };
- 
-// add employee
-const addEmployee = [
-{
-    type: 'input',
-    name: 'firstName',
-    message: "What is the employee's first name?",
-},
-{
-    type: 'input',
-    name: 'lastName',
-    message: "What is the employee's last name?",
-},
-{
-    type: 'list',
-    name: 'role',
-    message: "What is the employee's role?",
-    choices: ['Sales Lead', 'Salesperson', 'Software Engineer', 'Account Manager', 'Accountant', 'Legal Team Lead', 'Lawyer', 'Customer Service',],
-},
-{
-    type: 'list',
-    name: 'manager',
-    message: "Who is the employee's manager?",
-    choices: ['None', 'John Doe', 'Mike Chan', 'Ashley Rodriguez', 'Kevin Tupik', 'Kunal Singh', 'Malia Brown', 'Sarah Lourd',],
-}];
+
+//add employee
+const addEmployee = () => {
+    const getRoles = () =>
+        db.promise().query(`SELECT * FROM roles`)
+        .then((results) => {
+            //console.log(results)
+            const roleArr = results[0].map((obj) => obj.title);
+            //console.log(roleArr);
+            return roleArr;
+        })   
+        const getManagers = () =>
+        db.promise().query(`SELECT CONCAT(first_name, ' ', last_name) AS manager FROM employees`)
+        .then((results) => {
+            //console.log(results)
+            const managerArr = results[0].map((obj) => obj.manager);
+            //console.log(managerArr);
+            return managerArr;
+        });
+          
+    inquirer
+    .prompt([
+        {
+            type: 'input',
+            name: 'firstName',
+            message: "What is the employee's first name?",
+        },
+        {
+            type: 'input',
+            name: 'lastName',
+            message: "What is the employee's last name?",
+        },
+        {
+            type: 'list',
+            name: 'title',
+            message: "What is the employee's role?",
+            choices: getRoles,
+        },
+        {
+            type: 'list',
+            name: 'manager',
+            message: "Who is the employee's manager?",
+            choices: getManagers,
+        }
+    ]).then((answer) => {
+        console.log(answer)
+        db.promise().query(`SELECT id FROM roles WHERE title = ?`, answer.title)
+            .then(result => {
+               // console.log(result)
+                let roleId = result[0].map(obj => obj.id);
+                console.log(roleId[0])
+                console.log(roleId[0])
+                return roleId[0]
+            })
+
+        db.promise().query(`SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) ='${answer.manager}'`)
+        .then(result => {
+            //console.log(result)
+            let employeeId = result[0].map(obj => obj.id);
+            console.log(employeeId[0])
+            console.log(employeeId[0])
+            return employeeId[0]
+            })
+        })
+        .then(db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id)
+        VALUES(?, ?, ?, ?)`, [answer.firstName, answer.lastName, roleId[0], employeeId[0]], (err, results) => {
+            if (err) {
+                console.log(err)
+            } else {
+                //console.table(results)
+                //console.log(results);
+                viewEmployees();
+                init();
+            } 
+        }))
+
+};
+
 // update employee's role
 const updateRole = [
 {
