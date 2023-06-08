@@ -1,44 +1,20 @@
 // Import packages
 const inquirer = require('inquirer');
-const express = require('express')
-
 const mysql = require('mysql2');
-
-const PORT = process.env.PORT || 3001;
-const app = express();
-
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-
-// Connect to database
-const db = mysql.createConnection(
-  {
-    host: 'localhost',
-    // MySQL username,
-    user: 'root',
-    // TODO: Add MySQL password here
-    password: '1Kakumisukiya@',
-    database: 'employees_db'
-  },
-  console.log(`Connected to the movies_db database.`)
-)
-
-const initQuestion = [{
-    type: 'list',
-    name: 'menu',
-    message: 'What would you like to do?',
-    choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add Department', 'Add Role', 'Add Employee', 'Update Employee Role', 'Quit']
-}];
+const cTable = require("console.table");
+const sql = require('./db/query_lib');
+const choiceHelper = require('./lib/choiceHelper');
 
 //View All Departments
 const viewDepartments = () => {
-    const sql =`SELECT * FROM departments`
-    db.query(sql, (err, results) => {
-        err ? console.log(err) : console.table(results)
-        //console.log(results);
+    sql.getDepartments()
+    .then(([rows]) => {
+        //console.log(rows)
+        console.table(rows)
         init();
     })
+
+    
 };
 
 //View All Roles
@@ -156,7 +132,7 @@ const addEmployee = () => {
             //console.log(managerArr);
             return managerArr;
         });
-          
+
     inquirer
     .prompt([
         {
@@ -227,7 +203,13 @@ const updateRole = [
 
 function init() {
     inquirer
-    .prompt(initQuestion)
+    .prompt([
+    {
+        type: 'list',
+        name: 'menu',
+        message: 'What would you like to do?',
+        choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add Department', 'Add Role', 'Add Employee', 'Update Employee Role', 'Quit']
+    }])
     .then(answer => {
      switch (answer.menu) {
         case 'View All Departments': viewDepartments();
@@ -246,6 +228,8 @@ function init() {
         break;
         case 'Quit':
             process.exit();
+        default:
+            break;
      }
     })
     .catch(err => console.error(err)); 

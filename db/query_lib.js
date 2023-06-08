@@ -1,3 +1,4 @@
+const db = require('./connection');
 
 class DBQuery {
     constructor(db){
@@ -5,21 +6,17 @@ class DBQuery {
     }
 
 //View All Departments
-viewDepartments() {
-    const sql =`SELECT * FROM departments`
-    return this.db.promise().query(sql, (err, results) => {
-        err ? console.log(err) : console.table(results)})
+getDepartments() {
+    return this.db.promise().query(`SELECT * FROM departments`)
 };
 
 //View All Roles
-viewRoles () {
-    const sql =`SELECT * FROM roles`
-    return this.db.promise().query(sql, (err, results) => {
-        err ? console.log(err) : console.table(results)})
+getRoles () {
+    return this.db.promise().query(`SELECT * FROM roles`)
 };
 
 //View All Employees
-viewEmployees () {
+getEmployees () {
     const sql = `SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.department_name, roles.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
     FROM employees
     LEFT JOIN roles ON employees.role_id = roles.id
