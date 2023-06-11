@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const cTable = require("console.table");
 const sql = require('./db/query_lib');
-const choiceHelper = require('./lib/choiceHelper');
+const db = require('./db/connection');
 
 //View All Departments
 const viewDepartments = () => {
@@ -53,8 +53,9 @@ const addDepartment = () => {
     })
 };
 
-//add role
+// add role
 const addRole = () => {
+
     const getDepartments = () =>
         db.promise().query(`SELECT * FROM departments`)
         .then((results) => {
@@ -85,15 +86,16 @@ const addRole = () => {
     ]).then(ans => {
         db.promise().query(`SELECT id FROM departments WHERE department_name = ?`, ans.department)
             .then(result => {
-                console.log(result)
+                //console.log(result)
                 let departmentId = result[0].map(obj => obj.id);
-                console.log(departmentId[0])
+                //console.log(departmentId[0])
                 //console.log(departmentId[0])
                 return departmentId[0]
             })
             .then((departmentId) => {
                 db.promise().query(`INSERT INTO roles(title, salary, department_id)
             VALUES(?, ?, ?)`, [ans.title, ans.salary, departmentId]);
+                console.log('Added Role!')
                 init()
             })
     })
@@ -102,90 +104,73 @@ const addRole = () => {
 
 //add employee
 const addEmployee = () => {
-    const getRoles = () =>
-        db.promise().query(`SELECT * FROM roles`)
-        .then((results) => {
-            //console.log(results)
-            const roleArr = results[0].map((obj) => obj.title);
-            //console.log(roleArr);
-            return roleArr;
-        })   
-        const getManagers = () =>
-        db.promise().query(`SELECT CONCAT(first_name, ' ', last_name) AS manager FROM employees`)
-        .then((results) => {
-            //console.log(results)
-            const managerArr = results[0].map((obj) => obj.manager);
-            //console.log(managerArr);
-            return managerArr;
-        });
-
     inquirer
     .prompt([
-        {
-            type: 'input',
-            name: 'firstName',
-            message: "What is the employee's first name?",
-        },
-        {
-            type: 'input',
-            name: 'lastName',
-            message: "What is the employee's last name?",
-        },
-        {
-            type: 'list',
-            name: 'title',
-            message: "What is the employee's role?",
-            choices: getRoles,
-        },
-        {
-            type: 'list',
-            name: 'manager',
-            message: "Who is the employee's manager?",
-            choices: getManagers,
-        }
+      {
+        type: "input",
+        name: "firstName",
+        message: "What is the employee's first name?",
+      },
+      {
+        type: "input",
+        name: "lastName",
+        message: "What is the employee's last name?",
+      },
     ]).then((answer) => {
-        console.log(answer)
-        db.promise().query(`SELECT id FROM roles WHERE title = ?`, answer.title)
-            .then(result => {
-               // console.log(result)
-                let roleId = result[0].map(obj => obj.id);
-                console.log(roleId[0])
-                console.log(roleId[0])
-                return roleId[0]
-            })
-
-        db.promise().query(`SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) ='${answer.manager}'`)
-        .then(result => {
-            //console.log(result)
-            let employeeId = result[0].map(obj => obj.id);
-            console.log(employeeId[0])
-            console.log(employeeId[0])
-            return employeeId[0]
-            })
-        })
-        .then(db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id)
-        VALUES(?, ?, ?, ?)`, [answer.firstName, answer.lastName, roleId[0], employeeId[0]], (err, results) => {
-            if (err) {
-                console.log(err)
-            } else {
-                //console.table(results)
-                //console.log(results);
+      const input = [answer.firstName, answer.lastName];
+      const roleSql = `SELECT roles.id, roles.title FROM roles`;
+      db.query(roleSql, (error, data) => {
+        if (error) throw error;
+        //console.log(data)
+        const roles = data.map(({ id, title }) => ({ name: title, value: id }));
+        //console.log(roles);
+        inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "role",
+            message: "What is the employee's role?",
+            choices: roles,
+          },
+        ]).then((roleChoice) => {
+          const role = roleChoice.role;
+          input.push(role);
+          const managerSql = `SELECT * FROM employees`;
+          db.query(managerSql, (error, data) => {
+            if (error) throw error;
+            console.log(data)
+            const managers = data.map(({ id, first_name, last_name }) => ({
+              name: first_name + " " + last_name,
+              value: id,
+            }));
+            console.log(managers)
+            inquirer
+            .prompt([
+              {
+                type: "list",
+                name: "manager",
+                message: "Who is the employee's manager?",
+                choices: managers,
+              },
+            ]).then((managerChoice) => {
+                console.log(managerChoice)
+              const manager = managerChoice.manager;
+              console.log(manager)
+              input.push(manager);
+              console.log(input)
+              const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
+                                    VALUES (?, ?, ?, ?)`;
+              db.query(sql, input, (error) => {
+                if (error) throw error;
+                console.log("Employee added successfully!");
                 viewEmployees();
-                init();
-            } 
-        }))
-
-};
-
-// update employee's role
-const updateRole = [
-{
-    type: 'list',
-    name: 'employeeName',
-    message: "Which employee's role do you want to update?",
-    choices: ['John Doe', 'Mike Chan', 'Ashley Rodriguez', 'Kevin Tupik', 'Kunal Singh', 'Malia Brown','Sarah Lourd', 'Tom Allen'],
-}];
-
+              });
+            });
+          });
+        });
+      });
+    });
+  };
 
 function init() {
     inquirer

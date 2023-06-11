@@ -12,7 +12,7 @@ getDepartments() {
 
 //View All Roles
 getRoles () {
-    return this.db.promise().query(`SELECT roles.id, roles.title, roles.salary, departments.department_name FROM roles JOIN departments ON roles.department_id = departments.id`)
+    return this.db.promise().query(`SELECT roles.id, roles.title, roles.salary, departments.department_name FROM roles JOIN departments ON roles.department_id = departments.id ORDER BY roles.id`)
 };
 
 //View All Employees
