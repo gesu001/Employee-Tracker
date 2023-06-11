@@ -45,8 +45,7 @@ Open index.js file with integrated terminal, run index.js by using command line:
 ```
 node index.js
 ```
-
-* [Employee-Tracker](https://github.com/gesu001/Employee-Tracker) 
+* [Demo of Employee-Tracker video](https://drive.google.com/file/d/1YmZYcHD2WxyXTIihENaG29Tet77fGNsL/view?usp=sharing) is available.
 
 ## Contributing
 
