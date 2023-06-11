@@ -11,6 +11,9 @@ const viewDepartments = () => {
     .then(([rows]) => {
         //console.log(rows)
         console.table(rows)
+        console.log(
+          "------------------------------------------------------------------"
+        );
         init();
     })  
 };
@@ -21,6 +24,9 @@ const viewRoles = () => {
     .then(([rows]) => {
         //console.log(rows)
         console.table(rows)
+        console.log(
+          "------------------------------------------------------------------"
+        );
         init();
     })  
 };
@@ -31,6 +37,9 @@ const viewEmployees = () => {
     .then(([rows]) => {
         //console.log(rows)
         console.table(rows)
+        console.log(
+          "------------------------------------------------------------------"
+        );
         init();
     })  
 };
@@ -48,7 +57,10 @@ const addDepartment = () => {
         sql.addDepartment(data)
         .then(() => {
           console.log("Added Department!")
-          viewDepartments()
+          console.log(
+            "------------------------------------------------------------------"
+          );
+        //  viewDepartments();
           init();
         });
     })
@@ -56,7 +68,6 @@ const addDepartment = () => {
 
 // add role
 const addRole = () => {
-
     const getDepartments = () =>
         db.promise().query(`SELECT * FROM departments`)
         .then((results) => {
@@ -65,7 +76,6 @@ const addRole = () => {
             //console.log(departArr);
             return departArr;
         })   
-
     inquirer
     .prompt([
     {
@@ -96,9 +106,12 @@ const addRole = () => {
             .then((departmentId) => {
                 db.promise().query(`INSERT INTO roles(title, salary, department_id)
             VALUES(?, ?, ?)`, [ans.title, ans.salary, departmentId]);
-                console.log('Added Role!')
-                viewRoles();
-                init();
+              console.log('Added Role!')
+              console.log(
+                "------------------------------------------------------------------"
+              );
+            //  viewRoles();
+              init();
             })
     })
 
@@ -118,7 +131,8 @@ const addEmployee = () => {
         name: "lastName",
         message: "What is the employee's last name?",
       },
-    ]).then((answer) => {
+    ])
+    .then((answer) => {
       const input = [answer.firstName, answer.lastName];
       const roleSql = `SELECT roles.id, roles.title FROM roles`;
       db.query(roleSql, (error, data) => {
@@ -155,17 +169,20 @@ const addEmployee = () => {
                 choices: managers,
               },
             ]).then((managerChoice) => {
-                console.log(managerChoice)
+               // console.log(managerChoice)
               const manager = managerChoice.manager;
-              console.log(manager)
+              //console.log(manager)
               input.push(manager);
-              console.log(input)
+              //console.log(input)
               const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
                                     VALUES (?, ?, ?, ?)`;
               db.query(sql, input, (error) => {
                 if (error) throw error;
                 console.log("Employee added successfully!");
-                viewEmployees();
+                console.log(
+                  "------------------------------------------------------------------"
+                );
+                //viewEmployees();
                 init();
               });
             });
@@ -186,7 +203,7 @@ const updateRole = () => {
       name: first_name + " " + last_name,
       value: id,
       }));
-    console.log(employeeChoice)
+    //console.log(employeeChoice)
   inquirer
   .prompt([
       {
@@ -217,7 +234,7 @@ const updateRole = () => {
         .then((roleChoice) => {
           const roleId = roleChoice.role;
           input.push(roleId);
-          console.log(input)
+         // console.log(input)
           const sql = `UPDATE employees
                        SET role_id = ${roleId}
                        WHERE id = ${employeeId}`;
@@ -225,7 +242,10 @@ const updateRole = () => {
           db.query(sql, input, (error) => {
           if (error) throw error;
           console.log("Role updated successfully!");
-          viewEmployees();
+          console.log(
+            "------------------------------------------------------------------"
+          );
+         // viewEmployees();
           init();
           });
         })
