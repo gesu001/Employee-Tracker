@@ -1,5 +1,5 @@
 # Employee-Tracker
-
+[Employee-tracker demo.webm](https://github.com/gesu001/Employee-Tracker/assets/125954857/611db2a7-fb24-4390-8729-c072164cbcb6)
 
 ## Description
 
