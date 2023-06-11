@@ -48,6 +48,7 @@ const addDepartment = () => {
         sql.addDepartment(data)
         .then(() => {
           console.log("Added Department!")
+          viewDepartments()
           init();
         });
     })
@@ -96,7 +97,8 @@ const addRole = () => {
                 db.promise().query(`INSERT INTO roles(title, salary, department_id)
             VALUES(?, ?, ?)`, [ans.title, ans.salary, departmentId]);
                 console.log('Added Role!')
-                init()
+                viewRoles();
+                init();
             })
     })
 
@@ -138,12 +140,12 @@ const addEmployee = () => {
           const managerSql = `SELECT * FROM employees`;
           db.query(managerSql, (error, data) => {
             if (error) throw error;
-            console.log(data)
+            //console.log(data)
             const managers = data.map(({ id, first_name, last_name }) => ({
               name: first_name + " " + last_name,
               value: id,
             }));
-            console.log(managers)
+            //console.log(managers)
             inquirer
             .prompt([
               {
@@ -164,6 +166,7 @@ const addEmployee = () => {
                 if (error) throw error;
                 console.log("Employee added successfully!");
                 viewEmployees();
+                init();
               });
             });
           });
@@ -171,6 +174,65 @@ const addEmployee = () => {
       });
     });
   };
+
+//update role
+
+const updateRole = () => {
+
+  db.query(`SELECT * FROM employees`, (error, data) => {
+    if (error) throw error;
+    //console.log(data)
+    const employeeChoice = data.map(({ id, first_name, last_name }) => ({
+      name: first_name + " " + last_name,
+      value: id,
+      }));
+    console.log(employeeChoice)
+  inquirer
+  .prompt([
+      {
+          type: "list",
+          name: "employee",
+          message: "Which employee's role do you want to update?",
+          choices: employeeChoice,
+      }
+    ])
+  .then((employeeChoice) => {
+    const employeeId = employeeChoice.employee
+    const input = [employeeId]
+    const roleSql = `SELECT roles.id, roles.title FROM roles`;
+      db.query(roleSql, (error, data) => {
+        if (error) throw error;
+        //console.log(data)
+        const roles = data.map(({ id, title }) => ({ name: title, value: id }));
+        //console.log(roles);
+        inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "role",
+            message:  "Which role do you want to assign the selected employee?",
+            choices: roles,
+          }
+        ])
+        .then((roleChoice) => {
+          const roleId = roleChoice.role;
+          input.push(roleId);
+          console.log(input)
+          const sql = `UPDATE employees
+                       SET role_id = ${roleId}
+                       WHERE id = ${employeeId}`;
+
+          db.query(sql, input, (error) => {
+          if (error) throw error;
+          console.log("Role updated successfully!");
+          viewEmployees();
+          init();
+          });
+        })
+      })
+    })
+  })
+};
 
 function init() {
     inquirer
